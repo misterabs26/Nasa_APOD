@@ -2,8 +2,6 @@ import streamlit as st
 import requests
 from datetime import datetime
 
-from streamlit import divider
-
 st.title("Astronomy Photo of the Day")
 st.divider()
 
@@ -19,20 +17,24 @@ if selected_date:
     url = (f"https://api.nasa.gov/planetary/apod?api_key={api_key}&"
            f"date={formatted_date}")
 
-    response = requests.get(url)
+    # Show spinner while fetching data
+    with st.spinner("Fetching data..."):
+        response = requests.get(url)
 
-    if response.status_code == 200:
-        data = response.json()
+        if response.status_code == 200:
+            data = response.json()
 
-        st.header(data["title"],divider="rainbow")
+            st.header(data["title"],divider="rainbow")
 
-        if data["media_type"] == "image":
-            # when hd quality is available
-            if data["hdurl"]:
-                st.image(data["hdurl"], use_container_width=True)
+            if data["media_type"] == "image":
+                # when hd quality is available
+                if data["hdurl"]:
+                    st.image(data["hdurl"], use_container_width=True)
+                else:
+                    st.image(data["url"], use_container_width=True)
             else:
-                st.image(data["url"], use_container_width=True)
-        else:
-            st.video(data["url"])
+                st.video(data["url"])
 
-        st.write(data["explanation"])
+            st.write(data["explanation"])
+        else:
+            st.error("Failed to fetch data from NASA API")
